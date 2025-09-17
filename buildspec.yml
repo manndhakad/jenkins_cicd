@@ -1,0 +1,42 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.11
+    commands:
+      - echo Installing base tools...
+      - yum install -y git curl wget unzip --skip-broken
+
+      - echo Updating AWS CLI v2...
+      - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+      - unzip -o awscliv2.zip
+      - sudo ./aws/install --update
+      - export PATH=$PATH:/usr/local/bin
+
+      - echo Installing Terraform 1.12.2...
+      - wget https://releases.hashicorp.com/terraform/1.12.2/terraform_1.12.2_linux_amd64.zip
+      - unzip -o terraform_1.12.2_linux_amd64.zip
+      - sudo mv terraform /usr/local/bin/
+      - terraform --version
+
+  pre_build:
+    commands:
+      - echo Initializing Terraform...
+      - cd iac-terraform || exit 1     # <--- Ensure the directory exists, fail if not
+      - terraform version
+      - terraform init
+
+  build:
+    commands:
+      - echo Running Terraform plan...
+      - terraform plan -out=tfplan
+
+  post_build:
+    commands:
+      - echo Applying Terraform changes...
+      - terraform apply -auto-approve tfplan
+
+artifacts:
+  files:
+    - '**/*'     # <--- This includes all files recursively, not just directories
