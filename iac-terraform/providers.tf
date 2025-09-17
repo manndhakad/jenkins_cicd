@@ -2,7 +2,7 @@
 
 provider "aws" {
   region  = "ap-south-1"
-  profile = "default"
+  #profile = "default"
   #access_key = ""
   #secret_key = ""
 }
